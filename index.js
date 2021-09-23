@@ -15,7 +15,14 @@ const module = device.createShaderModule({
 const pipeline = device.createRenderPipeline({
   vertex: {
     module,
-    entryPoint: 'vs_main'
+    entryPoint: 'vs_main',
+    buffers: [{
+      arrayStride: 20,
+      attributes: [
+        { format: 'float32x2', offset: 0, shaderLocation: 0 },
+        { format: 'float32x3', offset: 8, shaderLocation: 1 }
+      ]
+    }]
   },
   fragment: {
     module,
@@ -23,6 +30,18 @@ const pipeline = device.createRenderPipeline({
     targets: [{ format }]
   }
 })
+
+const vertexBuffer = device.createBuffer({
+  size: 60,
+  usage: GPUBufferUsage.VERTEX,
+  mappedAtCreation: true
+})
+new Float32Array(vertexBuffer.getMappedRange()).set([
+   0,  1, 1, 0, 0,
+  -1, -1, 0, 1, 0,
+   1, -1, 0, 0, 1
+])
+vertexBuffer.unmap()
 
 while (true) {
   await new Promise(requestAnimationFrame)
@@ -35,6 +54,7 @@ while (true) {
     }]
   })
   pass.setPipeline(pipeline)
+  pass.setVertexBuffer(0, vertexBuffer)
   pass.draw(3)
   pass.endPass()
   device.queue.submit([encoder.finish()])

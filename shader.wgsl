@@ -1,14 +1,22 @@
+struct VertexIn {
+    [[location(0)]] position: vec2<f32>;
+    [[location(1)]] color: vec3<f32>;
+};
+
+struct VertexOut {
+    [[builtin(position)]] position: vec4<f32>;
+    [[location(0)]] color: vec4<f32>;
+};
+
 [[stage(vertex)]]
-fn vs_main([[builtin(vertex_index)]] index: u32) -> [[builtin(position)]] vec4<f32> {
-    var positions = array<vec2<f32>, 3>(
-        vec2<f32>( 0.0,  1.0),
-        vec2<f32>(-1.0, -1.0),
-        vec2<f32>( 1.0, -1.0)
+fn vs_main(in: VertexIn) -> VertexOut {
+    return VertexOut(
+        vec4<f32>(in.position, 0.0, 1.0),
+        vec4<f32>(in.color, 1.0)
     );
-    return vec4<f32>(positions[index], 0.0, 1.0);
 }
 
 [[stage(fragment)]]
-fn fs_main() -> [[location(0)]] vec4<f32> {
-    return vec4<f32>(0.0, 0.0, 1.0, 1.0);
+fn fs_main(in: VertexOut) -> [[location(0)]] vec4<f32> {
+    return in.color;
 }
