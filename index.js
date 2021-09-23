@@ -43,8 +43,22 @@ new Float32Array(vertexBuffer.getMappedRange()).set([
 ])
 vertexBuffer.unmap()
 
+const uniformBuffer = device.createBuffer({
+  size: 8,
+  usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.MAP_WRITE
+})
+const bindGroup = device.createBindGroup({
+  layout: pipeline.getBindGroupLayout(0),
+  entries: [{ binding: 0, resource: { buffer: uniformBuffer } }]
+})
+
 while (true) {
-  await new Promise(requestAnimationFrame)
+  const time = await new Promise(requestAnimationFrame)
+
+  await uniformBuffer.mapAsync(GPUMapMode.WRITE)
+  new Float32Array(uniformBuffer.getMappedRange()).set([time])
+  uniformBuffer.unmap()
+
   const encoder = device.createCommandEncoder()
   const pass = encoder.beginRenderPass({
     colorAttachments: [{
@@ -55,6 +69,7 @@ while (true) {
   })
   pass.setPipeline(pipeline)
   pass.setVertexBuffer(0, vertexBuffer)
+  pass.setBindGroup(0, bindGroup)
   pass.draw(3)
   pass.endPass()
   device.queue.submit([encoder.finish()])
